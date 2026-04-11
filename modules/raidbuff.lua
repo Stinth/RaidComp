@@ -115,7 +115,7 @@ local function UpdateDisplay()
     for i = 1, NUM_CLASSES do
         local f = iconFrames[i]
         local req = required[i] or 0
-        local current = classCounts[i - 1] or 0
+        local current = classCounts[i] or 0
         
         if req > 0 then
             local show = true
