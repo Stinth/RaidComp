@@ -42,7 +42,7 @@ local function CreateIconFrames()
         tex:SetTexture(info.icon)
         
         local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-        text:SetPoint("CENTER", 0, 0)
+        text:SetPoint("BOTTOM", 0, 2)
         
         f.iconTex = tex
         f.text = text
