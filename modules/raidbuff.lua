@@ -34,14 +34,14 @@ local function CreateIconFrames()
         local info = classInfo[i]
         
         local f = CreateFrame("Frame", "RaidBuffIcon" .. i, FriendsFrame)
-        f:SetSize(36, 36)
+        f:SetSize(25, 25)
         f:SetParent(FriendsFrame)
         
         local tex = f:CreateTexture(nil, "ARTWORK")
         tex:SetAllPoints()
         tex:SetTexture(info.icon)
         
-        local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+        local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
         text:SetPoint("CENTER", 0, 0)
         
         f.iconTex = tex
@@ -122,7 +122,7 @@ local function UpdateDisplay()
                 f:ClearAllPoints()
                 
                 if visibleIndex == 1 then
-                    f:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 10, 0)
+                    f:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 3, 0)
                 else
                     f:SetPoint("TOPLEFT", iconFrames[visibleIndex - 1], "BOTTOMLEFT", 0, -2)
                 end
