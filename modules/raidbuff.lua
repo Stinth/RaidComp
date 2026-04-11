@@ -1,7 +1,7 @@
 local addonName = "RaidEnhance"
 
 local db = {
-    selectedBuffs = {[1] = true},
+    selectedBuffs = {[1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [10] = true, [11] = true, [12] = true, [13] = true},
     hidePresent = false,
 }
 
@@ -81,25 +81,8 @@ end
 local function GetRequiredBuffs()
     local required = {}
     for i = 1, 13 do
-        required[i] = 0
+        required[i] = BoolToNum(db.selectedBuffs[i])
     end
-    
-    if db.selectedBuffs then
-        required[1] = BoolToNum(db.selectedBuffs[1])
-        required[2] = BoolToNum(db.selectedBuffs[2]) + BoolToNum(db.selectedBuffs[3])
-        required[3] = BoolToNum(db.selectedBuffs[4])
-        required[4] = BoolToNum(db.selectedBuffs[5])
-        required[5] = BoolToNum(db.selectedBuffs[6])
-        required[6] = BoolToNum(db.selectedBuffs[13])
-        required[7] = BoolToNum(db.selectedBuffs[14])
-        required[8] = BoolToNum(db.selectedBuffs[7])
-        required[9] = BoolToNum(db.selectedBuffs[8])
-        required[10] = BoolToNum(db.selectedBuffs[9])
-        required[11] = BoolToNum(db.selectedBuffs[10])
-        required[12] = BoolToNum(db.selectedBuffs[11])
-        required[13] = BoolToNum(db.selectedBuffs[12])
-    end
-    
     return required
 end
 
@@ -121,11 +104,6 @@ local function UpdateDisplay()
     end
     
     if #iconFrames == 0 then
-        return
-    end
-    
-    local numGroup = GetNumGroupMembers()
-    if not numGroup or numGroup == 0 then
         return
     end
     
@@ -153,12 +131,7 @@ local function UpdateDisplay()
                 if visibleIndex == 1 then
                     f:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 10, 0)
                 else
-                    local prev = iconFrames[i - 1]
-                    if prev and prev:IsShown() then
-                        f:SetPoint("TOPLEFT", prev, "BOTTOMLEFT", 0, -2)
-                    else
-                        f:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 10, -(visibleIndex - 1) * 38)
-                    end
+                    f:SetPoint("TOPLEFT", iconFrames[visibleIndex - 1], "BOTTOMLEFT", 0, -2)
                 end
                 
                 f:Show()
