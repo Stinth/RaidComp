@@ -1,6 +1,7 @@
 local addonName = "RaidEnhance"
 
-local db = {
+RaidEnhance = {}
+RaidEnhance.db = {
     selectedBuffs = {[1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [10] = true, [11] = true, [12] = true, [13] = true},
     hidePresent = false,
 }
@@ -29,28 +30,6 @@ local function BoolToNum(value)
     return value and 1 or 0
 end
 
-local function CreateIconFrames()
-    for i = 1, NUM_CLASSES do
-        local info = classInfo[i]
-        
-        local f = CreateFrame("Frame", "RaidBuffIcon" .. i, FriendsFrame)
-        f:SetSize(25, 25)
-        f:SetParent(FriendsFrame)
-        
-        local tex = f:CreateTexture(nil, "ARTWORK")
-        tex:SetAllPoints()
-        tex:SetTexture(info.icon)
-        
-        local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-        text:SetPoint("BOTTOM", 0, 2)
-        
-        f.iconTex = tex
-        f.text = text
-        
-        iconFrames[i] = f
-    end
-end
-
 local function ScanGroup()
     for i = 0, 13 do
         classCounts[i] = 0
@@ -74,7 +53,7 @@ end
 local function GetRequiredBuffs()
     local required = {}
     for i = 1, 13 do
-        required[i] = BoolToNum(db.selectedBuffs[i])
+        required[i] = BoolToNum(RaidEnhance.db.selectedBuffs[i])
     end
     return required
 end
@@ -89,6 +68,28 @@ local function FormatText(currentAmount, requiredAmount)
         color = "|cFF50C878"
     end
     return color .. math.min(currentAmount, requiredAmount) .. "/" .. requiredAmount .. "|r"
+end
+
+local function CreateIconFrames()
+    for i = 1, NUM_CLASSES do
+        local info = classInfo[i]
+        
+        local f = CreateFrame("Frame", "RaidBuffIcon" .. i, FriendsFrame)
+        f:SetSize(25, 25)
+        f:SetParent(FriendsFrame)
+        
+        local tex = f:CreateTexture(nil, "ARTWORK")
+        tex:SetAllPoints()
+        tex:SetTexture(info.icon)
+        
+        local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+        text:SetPoint("BOTTOM", 0, 2)
+        
+        f.iconTex = tex
+        f.text = text
+        
+        iconFrames[i] = f
+    end
 end
 
 local function UpdateDisplay()
@@ -112,7 +113,7 @@ local function UpdateDisplay()
         
         if req > 0 then
             local show = true
-            if db.hidePresent and current >= req then
+            if RaidEnhance.db.hidePresent and current >= req then
                 show = false
             end
             
@@ -134,6 +135,8 @@ local function UpdateDisplay()
     end
 end
 
+RaidEnhance.UpdateDisplay = UpdateDisplay
+
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("GROUP_ROSTER_UPDATE")
@@ -147,46 +150,3 @@ frame:SetScript("OnEvent", function(self, event)
         UpdateDisplay()
     end
 end)
-
-SLASH_RAIDENHANCE1 = "/re"
-SLASH_RAIDENHANCE2 = "/raidenhance"
-
-SlashCmdList["RAIDENHANCE"] = function(msg)
-    local cmd, arg = strsplit(" ", msg, 2)
-    cmd = cmd or msg
-    
-    if cmd == "hidepresent" then
-        db.hidePresent = not db.hidePresent
-        print("hidePresent = " .. tostring(db.hidePresent))
-        UpdateDisplay()
-    elseif cmd == "set" then
-        if arg then
-            for i, info in ipairs(classInfo) do
-                if string.find(string.lower(info.name), string.lower(arg)) then
-                    db.selectedBuffs[i] = not db.selectedBuffs[i]
-                    print(info.name .. " = " .. tostring(db.selectedBuffs[i]))
-                    UpdateDisplay()
-                    return
-                end
-            end
-        end
-    elseif cmd == "list" then
-        for i, info in ipairs(classInfo) do
-            if db.selectedBuffs[i] then
-                print("+ " .. info.name)
-            end
-        end
-    elseif cmd == "reset" then
-        db.selectedBuffs = {}
-        db.hidePresent = false
-        print("reset")
-        UpdateDisplay()
-    else
-        print("/re set <class> - toggle tracking")
-        print("/re hidepresent - toggle hiding when met")
-        print("/re list - show tracked")
-        print("/re reset - reset all")
-    end
-end
-
-print("RaidEnhance loaded.")
