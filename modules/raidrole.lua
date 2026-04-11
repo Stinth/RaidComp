@@ -10,7 +10,7 @@ local function GetRaidButton(index)
     return _G["RaidGroupButton" .. index]
 end
 
-local function CreateRoleAnchor(index, promote, role)
+local function CreateRoleAnchor(index)
     local anchor = CreateFrame("Frame", "RaidEnhAnchor" .. index, UIParent)
     anchor:SetSize(16, 16)
     anchor:SetFrameStrata("HIGH")
@@ -18,7 +18,7 @@ local function CreateRoleAnchor(index, promote, role)
     
     local text = anchor:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
     text:SetPoint("LEFT", anchor, 0, 0)
-    text:SetText("|Tinterface/groupframe/ui-group-leadericon.blp:0|t") --..roleIcons[role]
+    text:SetText("")
     
     anchor.text = text
     roleFrames[index] = anchor
@@ -26,6 +26,15 @@ local function CreateRoleAnchor(index, promote, role)
 end
 
 local function UpdateRoleDisplay()
+    local db = RaidEnhance and RaidEnhance.db or {}
+    
+    if db.showRoleIcons == false then
+        for i, f in pairs(roleFrames) do
+            f:Hide()
+        end
+        return
+    end
+    
     local numGroup = GetNumGroupMembers()
     
     for i, f in pairs(roleFrames) do
@@ -46,17 +55,19 @@ local function UpdateRoleDisplay()
         end
         
         local role = UnitGroupRolesAssigned(unit)
+        
         local promote = ""
-
-        promote = (UnitIsGroupLeader(unit) and "|Tinterface/groupframe/ui-group-leadericon.blp:0|t")
-        or (UnitIsGroupAssistant(unit) and "|Tinterface/groupframe/ui-group-assistanticon.blp:0|t")
-        or (GetPartyAssignment("MAINTANK", unit) and "|Tinterface/groupframe/ui-group-maintank.blp:0|t")
-        or ""
+        if db.showPromoteIcons then
+            promote = (UnitIsGroupLeader(unit) and "|Tinterface/groupframe/ui-group-leadericon.blp:0|t")
+            or (UnitIsGroupAssistant(unit) and "|Tinterface/groupframe/ui-group-assistanticon.blp:0|t")
+            or (GetPartyAssignment("MAINTANK", unit) and "|Tinterface/groupframe/ui-group-maintank.blp:0|t")
+            or ""
+        end
         
         if role and role ~= "NONE" then
             local f = roleFrames[i]
             if not f then
-                f = CreateRoleAnchor(i, promote, role)
+                f = CreateRoleAnchor(i)
             end
             
             local raidBtn = GetRaidButton(i)

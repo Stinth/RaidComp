@@ -69,6 +69,36 @@ for i = 1, NUM_CLASSES do
     checks[i] = check
 end
 
+local roleLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+roleLabel:SetPoint("TOPLEFT", checks[13], "BOTTOMLEFT", -10, -30)
+roleLabel:SetText("Role Icons:")
+
+local showRolesCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+showRolesCheck:SetPoint("TOPLEFT", roleLabel, "BOTTOMLEFT", 0, -15)
+showRolesCheck:SetScript("OnClick", function(self)
+    RaidEnhance.db.showRoleIcons = self:GetChecked()
+    if RaidEnhance.UpdateRoleDisplay then
+        RaidEnhance.UpdateRoleDisplay()
+    end
+end)
+
+local showRolesText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+showRolesText:SetPoint("LEFT", showRolesCheck, "RIGHT", 5, 0)
+showRolesText:SetText("Show role icons (Tank/Healer/DPS)")
+
+local promoteCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+promoteCheck:SetPoint("TOPLEFT", showRolesCheck, "BOTTOMLEFT", 0, -15)
+promoteCheck:SetScript("OnClick", function(self)
+    RaidEnhance.db.showPromoteIcons = self:GetChecked()
+    if RaidEnhance.UpdateRoleDisplay then
+        RaidEnhance.UpdateRoleDisplay()
+    end
+end)
+
+local promoteText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
+promoteText:SetText("Show promote icons (Leader/Assistant)")
+
 frame:SetScript("OnShow", function()
     hideCheck:SetChecked(RaidEnhance.db.hidePresent)
     for i = 1, NUM_CLASSES do
@@ -76,6 +106,8 @@ frame:SetScript("OnShow", function()
             checks[i]:SetChecked(RaidEnhance.db.selectedBuffs[i])
         end
     end
+    showRolesCheck:SetChecked(RaidEnhance.db.showRoleIcons ~= false)
+    promoteCheck:SetChecked(RaidEnhance.db.showPromoteIcons ~= false)
 end)
 
 local category = Settings.RegisterCanvasLayoutCategory(frame, "RaidEnhance")
