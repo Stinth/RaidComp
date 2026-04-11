@@ -17,7 +17,7 @@ local function CreateRoleAnchor(index, promote, role)
     anchor:Hide()
     
     local text = anchor:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-    text:SetPoint("CENTER", anchor, 0, 0)
+    text:SetPoint("LEFT", anchor, 0, 0)
     text:SetText("|Tinterface/groupframe/ui-group-leadericon.blp:0|t") --..roleIcons[role]
     
     anchor.text = text
@@ -62,7 +62,7 @@ local function UpdateRoleDisplay()
             local raidBtn = GetRaidButton(i)
             if raidBtn and raidBtn:IsShown() then
                 f:ClearAllPoints()
-                f:SetPoint("LEFT", raidBtn, "LEFT", 8, -1)
+                f:SetPoint("LEFT", raidBtn, "LEFT", 2, -1)
                 f.text:SetText(promote..roleIcons[role])
                 f:Show()
             end
