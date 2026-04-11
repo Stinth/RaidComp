@@ -1,0 +1,7 @@
+## Interface: 120000
+## Title: RaidEnhance
+## Notes: Raid class distribution tracker
+## Author: YourName
+## Version: 1.0.0
+
+modules/raidbuff.lua
