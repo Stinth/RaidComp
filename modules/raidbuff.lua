@@ -37,10 +37,6 @@ local function CreateIconFrames()
         f:SetSize(36, 36)
         f:SetParent(FriendsFrame)
         
-        local bg = f:CreateTexture()
-        bg:SetAllPoints()
-        bg:SetColorTexture(0.1, 0.1, 0.1, 0.8)
-        
         local tex = f:CreateTexture(nil, "ARTWORK")
         tex:SetAllPoints()
         tex:SetTexture(info.icon)
@@ -50,12 +46,9 @@ local function CreateIconFrames()
         
         f.iconTex = tex
         f.text = text
-        f.bg = bg
         
         iconFrames[i] = f
     end
-    
-    UpdateDisplay()
 end
 
 local function ScanGroup()
@@ -149,6 +142,7 @@ frame:SetScript("OnEvent", function(self, event)
     if event == "PLAYER_ENTERING_WORLD" then
         self:UnregisterEvent("PLAYER_ENTERING_WORLD")
         CreateIconFrames()
+        UpdateDisplay()
     elseif event == "GROUP_ROSTER_UPDATE" then
         UpdateDisplay()
     end
