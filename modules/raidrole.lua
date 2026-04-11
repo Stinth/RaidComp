@@ -4,32 +4,32 @@ local roleIcons = {
     TANK = INLINE_TANK_ICON,
 }
 
-local roleFonts = {}
+local roleFrames = {}
 
 local function GetRaidButton(index)
     return _G["RaidGroupButton" .. index]
 end
 
-local function CreateRoleText(index)
-    local f = GetRaidButton(index)
-    if not f then
-        return nil
-    end
+local function CreateRoleAnchor(index, promote, role)
+    local anchor = CreateFrame("Frame", "RaidEnhAnchor" .. index, UIParent)
+    anchor:SetSize(16, 16)
+    anchor:SetFrameStrata("HIGH")
+    anchor:Hide()
     
-    local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-    text:SetPoint("LEFT", f, "LEFT", 0, 0)
-    text:SetText(roleIcons.DAMAGER)
-    text:Show()
+    local text = anchor:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+    text:SetPoint("CENTER", anchor, 0, 0)
+    text:SetText("|Tinterface/groupframe/ui-group-leadericon.blp:0|t") --..roleIcons[role]
     
-    roleFonts[index] = text
-    return text
+    anchor.text = text
+    roleFrames[index] = anchor
+    return anchor
 end
 
 local function UpdateRoleDisplay()
     local numGroup = GetNumGroupMembers()
     
-    for i, text in pairs(roleFonts) do
-        text:Hide()
+    for i, f in pairs(roleFrames) do
+        f:Hide()
     end
     
     if not numGroup or numGroup == 0 then
@@ -46,16 +46,25 @@ local function UpdateRoleDisplay()
         end
         
         local role = UnitGroupRolesAssigned(unit)
+        local promote = ""
+
+        promote = (UnitIsGroupLeader(unit) and "|Tinterface/groupframe/ui-group-leadericon.blp:0|t")
+        or (UnitIsGroupAssistant(unit) and "|Tinterface/groupframe/ui-group-assistanticon.blp:0|t")
+        or (GetPartyAssignment("MAINTANK", unit) and "|Tinterface/groupframe/ui-group-maintank.blp:0|t")
+        or ""
         
         if role and role ~= "NONE" then
-            local text = roleFonts[i]
-            if not text then
-                text = CreateRoleText(i)
+            local f = roleFrames[i]
+            if not f then
+                f = CreateRoleAnchor(i, promote, role)
             end
             
-            if text then
-                text:SetText(roleIcons[role])
-                text:Show()
+            local raidBtn = GetRaidButton(i)
+            if raidBtn and raidBtn:IsShown() then
+                f:ClearAllPoints()
+                f:SetPoint("LEFT", raidBtn, "LEFT", 8, -1)
+                f.text:SetText(promote..roleIcons[role])
+                f:Show()
             end
         end
     end
@@ -75,3 +84,5 @@ end)
 RaidEnhance.UpdateRoleDisplay = function()
     UpdateRoleDisplay()
 end
+
+print("RaidEnhance role module loaded.")
