@@ -1,7 +1,7 @@
 ## Interface: 120000
-## Title: RaidEnhance
+## Title: RaidComp
 ## Notes: Raid class and role tracker
-## Author: YourName
+## Author: Stinth
 ## Version: 1.0.0
 
 modules/raidbuff.lua

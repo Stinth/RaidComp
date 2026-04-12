@@ -1,7 +1,7 @@
-local addonName = "RaidEnhance"
+local addonName = "RaidComp"
 
-RaidEnhance = {}
-RaidEnhance.db = {
+RaidComp = {}
+RaidComp.db = {
     selectedBuffs = {[1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [10] = true, [11] = true, [12] = true, [13] = true},
     hidePresent = false,
     showRoleIcons = true,
@@ -55,7 +55,7 @@ end
 local function GetRequiredBuffs()
     local required = {}
     for i = 1, 13 do
-        required[i] = BoolToNum(RaidEnhance.db.selectedBuffs[i])
+        required[i] = BoolToNum(RaidComp.db.selectedBuffs[i])
     end
     return required
 end
@@ -76,7 +76,7 @@ local function CreateIconFrames()
     for i = 1, NUM_CLASSES do
         local info = classInfo[i]
         
-        local f = CreateFrame("Frame", "RaidBuffIcon" .. i, FriendsFrame)
+        local f = CreateFrame("Frame", "RaidCompBuffIcon" .. i, FriendsFrame)
         f:SetSize(25, 25)
         f:SetParent(FriendsFrame)
         
@@ -115,7 +115,7 @@ local function UpdateDisplay()
         
         if req > 0 then
             local show = true
-            if RaidEnhance.db.hidePresent and current >= req then
+            if RaidComp.db.hidePresent and current >= req then
                 show = false
             end
             
@@ -137,7 +137,7 @@ local function UpdateDisplay()
     end
 end
 
-RaidEnhance.UpdateDisplay = UpdateDisplay
+RaidComp.UpdateDisplay = UpdateDisplay
 
 local frame = CreateFrame("Frame")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")

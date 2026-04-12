@@ -17,11 +17,11 @@ local classInfo = {
 local NUM_CLASSES = 13
 
 local frame = CreateFrame("Frame")
-frame.name = "RaidEnhance"
+frame.name = "RaidComp"
 
 local title = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 title:SetPoint("TOPLEFT", 16, -16)
-title:SetText("RaidEnhance")
+title:SetText("RaidComp")
 
 local subtitle = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 subtitle:SetPoint("TOPLEFT", title, "BOTTOMLEFT", 0, -8)
@@ -30,9 +30,9 @@ subtitle:SetText("Track classes in your group")
 local hideCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
 hideCheck:SetPoint("TOPLEFT", subtitle, "BOTTOMLEFT", 0, -20)
 hideCheck:SetScript("OnClick", function(self)
-    RaidEnhance.db.hidePresent = self:GetChecked()
-    if RaidEnhance.UpdateDisplay then
-        RaidEnhance.UpdateDisplay()
+    RaidComp.db.hidePresent = self:GetChecked()
+    if RaidComp.UpdateDisplay then
+        RaidComp.UpdateDisplay()
     end
 end)
 
@@ -51,9 +51,9 @@ for i = 1, NUM_CLASSES do
     local col = (i - 1) % 2
     check:SetPoint("TOPLEFT", classLabel, "BOTTOMLEFT", (col * 120), -25 - (row * 30))
     check:SetScript("OnClick", function(self)
-        RaidEnhance.db.selectedBuffs[i] = self:GetChecked()
-        if RaidEnhance.UpdateDisplay then
-            RaidEnhance.UpdateDisplay()
+        RaidComp.db.selectedBuffs[i] = self:GetChecked()
+        if RaidComp.UpdateDisplay then
+            RaidComp.UpdateDisplay()
         end
     end)
     
@@ -76,9 +76,9 @@ roleLabel:SetText("Role Icons:")
 local showRolesCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
 showRolesCheck:SetPoint("TOPLEFT", roleLabel, "BOTTOMLEFT", 0, -15)
 showRolesCheck:SetScript("OnClick", function(self)
-    RaidEnhance.db.showRoleIcons = self:GetChecked()
-    if RaidEnhance.UpdateRoleDisplay then
-        RaidEnhance.UpdateRoleDisplay()
+    RaidComp.db.showRoleIcons = self:GetChecked()
+    if RaidComp.UpdateRoleDisplay then
+        RaidComp.UpdateRoleDisplay()
     end
 end)
 
@@ -89,9 +89,9 @@ showRolesText:SetText("Show role icons (Tank/Healer/DPS)")
 local promoteCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
 promoteCheck:SetPoint("TOPLEFT", showRolesCheck, "BOTTOMLEFT", 0, -15)
 promoteCheck:SetScript("OnClick", function(self)
-    RaidEnhance.db.showPromoteIcons = self:GetChecked()
-    if RaidEnhance.UpdateRoleDisplay then
-        RaidEnhance.UpdateRoleDisplay()
+    RaidComp.db.showPromoteIcons = self:GetChecked()
+    if RaidComp.UpdateRoleDisplay then
+        RaidComp.UpdateRoleDisplay()
     end
 end)
 
@@ -100,21 +100,23 @@ promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
 promoteText:SetText("Show promote icons (Leader/Assistant)")
 
 frame:SetScript("OnShow", function()
-    hideCheck:SetChecked(RaidEnhance.db.hidePresent)
+    hideCheck:SetChecked(RaidComp.db.hidePresent)
     for i = 1, NUM_CLASSES do
-        if checks[i] and RaidEnhance.db.selectedBuffs then
-            checks[i]:SetChecked(RaidEnhance.db.selectedBuffs[i])
+        if checks[i] and RaidComp.db.selectedBuffs then
+            checks[i]:SetChecked(RaidComp.db.selectedBuffs[i])
         end
     end
-    showRolesCheck:SetChecked(RaidEnhance.db.showRoleIcons ~= false)
-    promoteCheck:SetChecked(RaidEnhance.db.showPromoteIcons ~= false)
+    showRolesCheck:SetChecked(RaidComp.db.showRoleIcons ~= false)
+    promoteCheck:SetChecked(RaidComp.db.showPromoteIcons ~= false)
 end)
 
-local category = Settings.RegisterCanvasLayoutCategory(frame, "RaidEnhance")
+local category = Settings.RegisterCanvasLayoutCategory(frame, "RaidComp")
 Settings.RegisterAddOnCategory(category)
 
-SLASH_RAIDENHANCE1 = "/re"
+SLASH_RAIDCOMP1 = "/rcomp"
+SLASH_RAIDCOMP2 = "/raidcomp"
+SLASH_RAIDCOMP3 = "/comp"
 
-SlashCmdList["RAIDENHANCE"] = function(msg)
+SlashCmdList["RAIDCOMP"] = function(msg)
     Settings.OpenToCategory(category:GetID())
 end

@@ -11,7 +11,7 @@ local function GetRaidButton(index)
 end
 
 local function CreateRoleAnchor(index)
-    local anchor = CreateFrame("Frame", "RaidEnhAnchor" .. index, UIParent)
+    local anchor = CreateFrame("Frame", "RaidCompRoleAnchor" .. index, UIParent)
     anchor:SetSize(16, 16)
     anchor:SetFrameStrata("HIGH")
     anchor:Hide()
@@ -26,7 +26,7 @@ local function CreateRoleAnchor(index)
 end
 
 local function UpdateRoleDisplay()
-    local db = RaidEnhance and RaidEnhance.db or {}
+    local db = RaidComp and RaidComp.db or {}
     
     if db.showRoleIcons == false then
         for i, f in pairs(roleFrames) do
@@ -92,8 +92,6 @@ f:SetScript("OnEvent", function(self, event)
     UpdateRoleDisplay()
 end)
 
-RaidEnhance.UpdateRoleDisplay = function()
+RaidComp.UpdateRoleDisplay = function()
     UpdateRoleDisplay()
 end
-
-print("RaidEnhance role module loaded.")
