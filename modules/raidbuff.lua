@@ -98,10 +98,11 @@ local function UpdateDisplay()
     for _, f in ipairs(iconFrames) do
         f:Hide()
     end
-    
-    if #iconFrames == 0 then
+    local inRaid = IsInRaid()
+    if #iconFrames == 0 or not inRaid then
         return
     end
+
     
     ScanGroup()
     
