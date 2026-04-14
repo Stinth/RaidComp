@@ -11,8 +11,10 @@ local function GetRaidButton(index)
 end
 
 local function CreateRoleAnchor(index)
-    local anchor = CreateFrame("Frame", "RaidCompRoleAnchor" .. index, UIParent)
+    local raidBtn = GetRaidButton(index)
+    local anchor = CreateFrame("Frame", "RaidCompRoleAnchor" .. index, raidBtn)
     anchor:SetSize(16, 16)
+    anchor:SetPoint("LEFT", raidBtn, "LEFT", 2, -1)
     anchor:SetFrameStrata("HIGH")
     anchor:Hide()
     
@@ -70,13 +72,8 @@ local function UpdateRoleDisplay()
                 f = CreateRoleAnchor(i)
             end
             
-            local raidBtn = GetRaidButton(i)
-            if raidBtn and raidBtn:IsShown() then
-                f:ClearAllPoints()
-                f:SetPoint("LEFT", raidBtn, "LEFT", 2, -1)
-                f.text:SetText(promote..roleIcons[role])
-                f:Show()
-            end
+            f.text:SetText(promote..roleIcons[role])
+            f:Show()
         end
     end
 end
