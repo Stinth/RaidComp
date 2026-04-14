@@ -1,3 +1,6 @@
+v1.0.7
+- avoid showing raidbuff icons outside raid
+- anchor raid role frames properly
 v1.0.0
 - Raid class and role tracking anchored to the raid group frame (O)
 - Thanks to Translit for his original Trinket tracking weakaura that inspired this AddOn

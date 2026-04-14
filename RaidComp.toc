@@ -2,7 +2,7 @@
 ## Title: RaidComp
 ## Notes: Raid class and role tracker
 ## Author: Stinth
-## Version: 1.0.0
+## Version: 1.0.7
 
 modules/raidbuff.lua
 modules/raidrole.lua
