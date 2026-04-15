@@ -5,6 +5,8 @@
 ## IconTexture: Interface\Icons\inv_misc_grouplooking
 ## DefaultState: Enabled
 ## Version: 1.0.8
+## X-Curse-Project-ID: 1512320
+## X-Wago-ID: mKODX1Gx
 
 modules/raidbuff.lua
 modules/raidrole.lua
