@@ -1,8 +1,10 @@
-## Interface: 120000
+## Interface: 120001
 ## Title: RaidComp
 ## Notes: Raid class and role tracker
 ## Author: Stinth
-## Version: 1.0.7
+## IconTexture: Interface\Icons\inv_misc_grouplooking
+## DefaultState: Enabled
+## Version: 1.0.8
 
 modules/raidbuff.lua
 modules/raidrole.lua
