@@ -29,25 +29,20 @@ end
 
 local function UpdateRoleDisplay()
     local db = RaidComp and RaidComp.db or {}
-    
-    if db.showRoleIcons == false then
-        for i, f in pairs(roleFrames) do
-            f:Hide()
-        end
+    for i, f in pairs(roleFrames) do
+        f:Hide()
+    end
+
+    local inRaid = IsInRaid()
+    if db.showRoleIcons == false or not inRaid then
         return
     end
     
     local numGroup = GetNumGroupMembers()
     
-    for i, f in pairs(roleFrames) do
-        f:Hide()
-    end
-    
     if not numGroup or numGroup == 0 then
         return
     end
-    
-    local inRaid = IsInRaid()
     
     for i = 1, numGroup do
         local unit = inRaid and "raid" .. i or (i == 1 and "player" or "party" .. (i - 1))
