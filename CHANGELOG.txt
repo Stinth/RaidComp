@@ -1,3 +1,5 @@
+v1.0.10
+- bump toc
 v1.0.9
 - properly hide roles out of raid
 v1.0.8
