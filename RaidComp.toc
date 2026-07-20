@@ -1,10 +1,10 @@
-## Interface: 120001, 120005, 120007
+## Interface: 120001, 120005, 120007, 120100
 ## Title: RaidComp
 ## Notes: Raid class and role tracker
 ## Author: Stinth
 ## IconTexture: Interface\Icons\inv_misc_grouplooking
 ## DefaultState: Enabled
-## Version: 1.0.10
+## Version: 2.0.0-alpha
 ## X-Curse-Project-ID: 1512320
 ## X-Wago-ID: mKODX1Gx
 

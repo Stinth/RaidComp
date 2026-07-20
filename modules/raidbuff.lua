@@ -27,6 +27,10 @@ local classInfo = {
 local iconFrames = {}
 local classCounts = {}
 local NUM_CLASSES = 13
+local raidFrame
+local ICON_SIZE = 29
+local ICON_GAP = 1
+local ICON_COLUMNS = 2
 
 local function BoolToNum(value)
     return value and 1 or 0
@@ -73,12 +77,16 @@ local function FormatText(currentAmount, requiredAmount)
 end
 
 local function CreateIconFrames()
+    raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
+    if not raidFrame or #iconFrames > 0 then
+        return false
+    end
+
     for i = 1, NUM_CLASSES do
         local info = classInfo[i]
         
-        local f = CreateFrame("Frame", "RaidCompBuffIcon" .. i, FriendsFrame)
-        f:SetSize(25, 25)
-        f:SetParent(FriendsFrame)
+        local f = CreateFrame("Frame", "RaidCompBuffIcon" .. i, raidFrame)
+        f:SetSize(ICON_SIZE, ICON_SIZE)
         
         local tex = f:CreateTexture(nil, "ARTWORK")
         tex:SetAllPoints()
@@ -92,6 +100,8 @@ local function CreateIconFrames()
         
         iconFrames[i] = f
     end
+
+    return true
 end
 
 local function UpdateDisplay()
@@ -108,6 +118,10 @@ local function UpdateDisplay()
     
     local visibleIndex = 0
     local required = GetRequiredBuffs()
+    local raidTab = SocialUIFrame:GetTabByType(SocialUITabType.RaidList)
+    if not raidTab then
+        return
+    end
     
     for i = 1, NUM_CLASSES do
         local f = iconFrames[i]
@@ -124,12 +138,13 @@ local function UpdateDisplay()
                 visibleIndex = visibleIndex + 1
                 
                 f:ClearAllPoints()
-                
-                if visibleIndex == 1 then
-                    f:SetPoint("TOPLEFT", FriendsFrame, "TOPRIGHT", 3, 0)
-                else
-                    f:SetPoint("TOPLEFT", iconFrames[visibleIndex - 1], "BOTTOMLEFT", 0, -2)
-                end
+
+                local gridIndex = visibleIndex - 1
+                local column = gridIndex % ICON_COLUMNS
+                local row = math.floor(gridIndex / ICON_COLUMNS)
+                local xOffset = 4 + column * (ICON_SIZE + ICON_GAP)
+                local yOffset = -5 - row * (ICON_SIZE + ICON_GAP)
+                f:SetPoint("TOPLEFT", raidTab, "BOTTOMLEFT", xOffset, yOffset)
                 
                 f:Show()
                 f.text:SetText(FormatText(current, req))
@@ -141,15 +156,28 @@ end
 RaidComp.UpdateDisplay = UpdateDisplay
 
 local frame = CreateFrame("Frame")
+frame:RegisterEvent("ADDON_LOADED")
 frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("GROUP_ROSTER_UPDATE")
 
-frame:SetScript("OnEvent", function(self, event)
-    if event == "PLAYER_ENTERING_WORLD" then
-        self:UnregisterEvent("PLAYER_ENTERING_WORLD")
-        CreateIconFrames()
+local function InitializeForSocialUI()
+    if CreateIconFrames() then
+        raidFrame:HookScript("OnShow", UpdateDisplay)
         UpdateDisplay()
+    end
+end
+
+frame:SetScript("OnEvent", function(self, event, addonLoaded)
+    if event == "ADDON_LOADED" then
+        if addonLoaded == "Blizzard_SocialUI" then
+            InitializeForSocialUI()
+            self:UnregisterEvent("ADDON_LOADED")
+        end
+    elseif event == "PLAYER_ENTERING_WORLD" then
+        InitializeForSocialUI()
     elseif event == "GROUP_ROSTER_UPDATE" then
         UpdateDisplay()
     end
 end)
+
+InitializeForSocialUI()
