@@ -94,96 +94,21 @@ local function HideInactiveRoleAnchors(activeAnchors)
     end
 end
 
-local function SortFramesByPosition(frame1, frame2)
-    local top1, top2 = frame1:GetTop() or 0, frame2:GetTop() or 0
-    if math.abs(top1 - top2) > 1 then
-        return top1 > top2
-    end
-
-    return (frame1:GetLeft() or 0) < (frame2:GetLeft() or 0)
-end
-
-local function GetSortedChildren(parent, predicate)
-    local result = {}
-    if not parent then
-        return result
-    end
-
-    for _, child in ipairs({ parent:GetChildren() }) do
-        if child:IsShown() and (not predicate or predicate(child)) then
-            table.insert(result, child)
-        end
-    end
-
-    table.sort(result, SortFramesByPosition)
-    return result
-end
-
-local function GetRaidMembersBySubgroup()
-    local members = {}
-    local numRaidGroups = NUM_RAID_GROUPS or 8
-    for subgroup = 1, numRaidGroups do
-        members[subgroup] = {}
-    end
-
-    for raidIndex = 1, GetNumGroupMembers() do
-        local _, _, subgroup = GetRaidRosterInfo(raidIndex)
-        if subgroup and members[subgroup] then
-            table.insert(members[subgroup], "raid" .. raidIndex)
-        end
-    end
-
-    return members
-end
-
-local function UpdatePooledRoleDisplay(raidFrame, activeAnchors)
-    local groupsFrame = raidFrame and raidFrame.GroupsFrame
-    if not groupsFrame then
+local function UpdateSocialRoleDisplay(raidFrame, activeAnchors)
+    if not raidFrame or type(raidFrame.players) ~= "table" then
         return false
     end
 
     -- Blizzard assigns the current raid unit directly to every acquired row.
-    if raidFrame.players then
-        for _, playerFrame in ipairs(raidFrame.players) do
-            local roleAtlas, promotionAtlas, xOffset
-            if playerFrame.unit then
-                roleAtlas, promotionAtlas, xOffset = GetRoleDisplayInfo(playerFrame.unit)
-            end
-            if roleAtlas then
-                local anchor = GetRoleAnchor(playerFrame)
-                SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtlas, xOffset)
-                activeAnchors[anchor] = true
-            end
+    for _, playerFrame in ipairs(raidFrame.players) do
+        local roleAtlas, promotionAtlas, xOffset
+        if playerFrame.unit then
+            roleAtlas, promotionAtlas, xOffset = GetRoleDisplayInfo(playerFrame.unit)
         end
-
-        return true
-    end
-
-    local groupFrames = GetSortedChildren(groupsFrame, function(groupFrame)
-        return groupFrame.PlayersFrame ~= nil
-    end)
-    if #groupFrames == 0 then
-        return false
-    end
-
-    local membersBySubgroup = GetRaidMembersBySubgroup()
-    for subgroup, groupFrame in ipairs(groupFrames) do
-        local playerFrames = GetSortedChildren(groupFrame.PlayersFrame, function(playerFrame)
-            return playerFrame.CharacterClass ~= nil
-        end)
-        local subgroupMembers = membersBySubgroup[subgroup]
-
-        for playerIndex, playerFrame in ipairs(playerFrames) do
-            local unit = subgroupMembers and subgroupMembers[playerIndex]
-            local roleAtlas, promotionAtlas, xOffset
-            if unit then
-                roleAtlas, promotionAtlas, xOffset = GetRoleDisplayInfo(unit)
-            end
-            if roleAtlas then
-                local anchor = GetRoleAnchor(playerFrame)
-                SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtlas, xOffset)
-                activeAnchors[anchor] = true
-            end
+        if roleAtlas then
+            local anchor = GetRoleAnchor(playerFrame)
+            SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtlas, xOffset)
+            activeAnchors[anchor] = true
         end
     end
 
@@ -215,7 +140,7 @@ local function UpdateRoleDisplay()
 
     local activeAnchors = {}
     local raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
-    if not UpdatePooledRoleDisplay(raidFrame, activeAnchors) then
+    if not UpdateSocialRoleDisplay(raidFrame, activeAnchors) then
         UpdateLegacyRoleDisplay(activeAnchors)
     end
     HideInactiveRoleAnchors(activeAnchors)

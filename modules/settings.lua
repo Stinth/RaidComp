@@ -1,20 +1,5 @@
-local classInfo = {
-    [1] = { name = "Warrior", icon = 626008 },
-    [2] = { name = "Paladin", icon = 626003 },
-    [3] = { name = "Hunter", icon = 626000 },
-    [4] = { name = "Rogue", icon = 626005 },
-    [5] = { name = "Priest", icon = 626004 },
-    [6] = { name = "Death Knight", icon = 625998 },
-    [7] = { name = "Shaman", icon = 626006 },
-    [8] = { name = "Mage", icon = 626001 },
-    [9] = { name = "Warlock", icon = 626007 },
-    [10] = { name = "Monk", icon = 626002 },
-    [11] = { name = "Druid", icon = 625999 },
-    [12] = { name = "Demon Hunter", icon = 1260827 },
-    [13] = { name = "Evoker", icon = 4574311 },
-}
-
-local NUM_CLASSES = 13
+local classInfo = RaidComp.ClassInfo
+local NUM_CLASSES = #classInfo
 
 local frame = CreateFrame("Frame")
 frame.name = "RaidComp"
@@ -46,12 +31,13 @@ classLabel:SetText("Track Classes:")
 
 local checks = {}
 for i = 1, NUM_CLASSES do
+    local classID = i
     local check = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
-    local row = math.floor((i - 1) / 2)
-    local col = (i - 1) % 2
+    local row = math.floor((classID - 1) / 2)
+    local col = (classID - 1) % 2
     check:SetPoint("TOPLEFT", classLabel, "BOTTOMLEFT", (col * 120), -25 - (row * 30))
     check:SetScript("OnClick", function(self)
-        RaidComp.db.selectedBuffs[i] = self:GetChecked()
+        RaidComp.db.selectedBuffs[classID] = self:GetChecked()
         if RaidComp.UpdateDisplay then
             RaidComp.UpdateDisplay()
         end
@@ -60,17 +46,17 @@ for i = 1, NUM_CLASSES do
     local tex = check:CreateTexture(nil, "OVERLAY")
     tex:SetSize(20, 20)
     tex:SetPoint("LEFT", check, "RIGHT", 5, 0)
-    tex:SetTexture(classInfo[i].icon)
+    tex:SetTexture(classInfo[classID].icon)
     
     local text = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
     text:SetPoint("LEFT", tex, "RIGHT", 3, 0)
-    text:SetText(classInfo[i].name)
+    text:SetText(classInfo[classID].name)
     
-    checks[i] = check
+    checks[classID] = check
 end
 
 local roleLabel = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-roleLabel:SetPoint("TOPLEFT", checks[13], "BOTTOMLEFT", -10, -30)
+roleLabel:SetPoint("TOPLEFT", checks[NUM_CLASSES], "BOTTOMLEFT", -10, -30)
 roleLabel:SetText("Role Icons:")
 
 local showRolesCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
@@ -97,7 +83,7 @@ end)
 
 local promoteText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
-promoteText:SetText("Show promote icons (Leader/Assistant)")
+promoteText:SetText("Show promote icons (Leader/Assistant/Main Tank)")
 
 frame:SetScript("OnShow", function()
     hideCheck:SetChecked(RaidComp.db.hidePresent)

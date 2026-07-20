@@ -1,14 +1,30 @@
-local addonName = "RaidComp"
+RaidComp = RaidComp or {}
 
-RaidComp = {}
-RaidComp.db = {
+local defaults = {
     selectedBuffs = {[1] = true, [2] = true, [3] = true, [4] = true, [5] = true, [6] = true, [7] = true, [8] = true, [9] = true, [10] = true, [11] = true, [12] = true, [13] = true},
     hidePresent = false,
     showRoleIcons = true,
     showPromoteIcons = true,
 }
 
-local classInfo = {
+local function ApplyDefaults(target, source)
+    for key, value in pairs(source) do
+        if type(value) == "table" then
+            if type(target[key]) ~= "table" then
+                target[key] = {}
+            end
+            ApplyDefaults(target[key], value)
+        elseif target[key] == nil then
+            target[key] = value
+        end
+    end
+end
+
+RaidCompDB = type(RaidCompDB) == "table" and RaidCompDB or {}
+ApplyDefaults(RaidCompDB, defaults)
+RaidComp.db = RaidCompDB
+
+RaidComp.ClassInfo = {
     [1] = { name = "Warrior", icon = 626008 },
     [2] = { name = "Paladin", icon = 626003 },
     [3] = { name = "Hunter", icon = 626000 },
@@ -24,20 +40,23 @@ local classInfo = {
     [13] = { name = "Evoker", icon = 4574311 },
 }
 
+local classInfo = RaidComp.ClassInfo
 local iconFrames = {}
 local classCounts = {}
-local NUM_CLASSES = 13
+local NUM_CLASSES = #classInfo
 local raidFrame
 local ICON_SIZE = 29
 local ICON_GAP = 1
 local ICON_COLUMNS = 2
 
-local function BoolToNum(value)
-    return value and 1 or 0
+local function HideIconFrames()
+    for _, iconFrame in ipairs(iconFrames) do
+        iconFrame:Hide()
+    end
 end
 
 local function ScanGroup()
-    for i = 0, 13 do
+    for i = 1, NUM_CLASSES do
         classCounts[i] = 0
     end
     
@@ -46,22 +65,12 @@ local function ScanGroup()
         return
     end
     
-    local inRaid = IsInRaid()
     for i = 1, numGroup do
-        local unit = inRaid and "raid" .. i or (i == 1 and "player" or "party" .. (i - 1))
-        local _, _, classId = UnitClass(unit)
+        local _, _, classId = UnitClass("raid" .. i)
         if classId then
-            classCounts[classId] = classCounts[classId] + 1
+            classCounts[classId] = (classCounts[classId] or 0) + 1
         end
     end
-end
-
-local function GetRequiredBuffs()
-    local required = {}
-    for i = 1, 13 do
-        required[i] = BoolToNum(RaidComp.db.selectedBuffs[i])
-    end
-    return required
 end
 
 local function FormatText(currentAmount, requiredAmount)
@@ -78,8 +87,12 @@ end
 
 local function CreateIconFrames()
     raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
-    if not raidFrame or #iconFrames > 0 then
+    if not raidFrame then
         return false
+    end
+
+    if #iconFrames > 0 then
+        return true
     end
 
     for i = 1, NUM_CLASSES do
@@ -105,11 +118,8 @@ local function CreateIconFrames()
 end
 
 local function UpdateDisplay()
-    for _, f in ipairs(iconFrames) do
-        f:Hide()
-    end
-    local inRaid = IsInRaid()
-    if #iconFrames == 0 or not inRaid then
+    if #iconFrames == 0 or not IsInRaid() then
+        HideIconFrames()
         return
     end
 
@@ -117,39 +127,34 @@ local function UpdateDisplay()
     ScanGroup()
     
     local visibleIndex = 0
-    local required = GetRequiredBuffs()
     local raidTab = SocialUIFrame:GetTabByType(SocialUITabType.RaidList)
     if not raidTab then
+        HideIconFrames()
         return
     end
     
     for i = 1, NUM_CLASSES do
         local f = iconFrames[i]
-        local req = required[i] or 0
+        local req = RaidComp.db.selectedBuffs[i] and 1 or 0
         local current = classCounts[i] or 0
         
-        if req > 0 then
-            local show = true
-            if RaidComp.db.hidePresent and current >= req then
-                show = false
-            end
-            
-            if show then
-                visibleIndex = visibleIndex + 1
-                
-                f:ClearAllPoints()
+        local shouldShow = req > 0 and not (RaidComp.db.hidePresent and current >= req)
+        if shouldShow then
+            visibleIndex = visibleIndex + 1
 
-                local gridIndex = visibleIndex - 1
-                local column = gridIndex % ICON_COLUMNS
-                local row = math.floor(gridIndex / ICON_COLUMNS)
-                local xOffset = 4 + column * (ICON_SIZE + ICON_GAP)
-                local yOffset = -5 - row * (ICON_SIZE + ICON_GAP)
-                f:SetPoint("TOPLEFT", raidTab, "BOTTOMLEFT", xOffset, yOffset)
-                
-                f:Show()
-                f.text:SetText(FormatText(current, req))
-            end
+            f:ClearAllPoints()
+
+            local gridIndex = visibleIndex - 1
+            local column = gridIndex % ICON_COLUMNS
+            local row = math.floor(gridIndex / ICON_COLUMNS)
+            local xOffset = 4 + column * (ICON_SIZE + ICON_GAP)
+            local yOffset = -5 - row * (ICON_SIZE + ICON_GAP)
+            f:SetPoint("TOPLEFT", raidTab, "BOTTOMLEFT", xOffset, yOffset)
+
+            f.text:SetText(FormatText(current, req))
         end
+
+        f:SetShown(shouldShow)
     end
 end
 
@@ -161,7 +166,8 @@ frame:RegisterEvent("PLAYER_ENTERING_WORLD")
 frame:RegisterEvent("GROUP_ROSTER_UPDATE")
 
 local function InitializeForSocialUI()
-    if CreateIconFrames() then
+    if CreateIconFrames() and not frame.raidFrameHooked then
+        frame.raidFrameHooked = true
         raidFrame:HookScript("OnShow", UpdateDisplay)
         UpdateDisplay()
     end
