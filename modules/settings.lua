@@ -1,6 +1,7 @@
 local classInfo = RaidComp.ClassInfo
 local NUM_CLASSES = #classInfo
 local UpdatePreview
+local UpdateRoleSettingDependencies
 
 local frame = CreateFrame("Frame")
 frame.name = "RaidComp"
@@ -70,6 +71,7 @@ local showRolesCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemp
 showRolesCheck:SetPoint("TOPLEFT", roleLabel, "BOTTOMLEFT", 0, -15)
 showRolesCheck:SetScript("OnClick", function(self)
     RaidComp.db.showRoleIcons = self:GetChecked()
+    UpdateRoleSettingDependencies()
     if RaidComp.UpdateRoleDisplay then
         RaidComp.UpdateRoleDisplay()
     end
@@ -97,6 +99,12 @@ end)
 local promoteText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
 promoteText:SetText("Show promote icons (Leader/Assistant/Main Tank)")
+
+UpdateRoleSettingDependencies = function()
+    local roleIconsEnabled = showRolesCheck:GetChecked()
+    promoteCheck:SetEnabled(roleIconsEnabled)
+    promoteText:SetFontObject(roleIconsEnabled and GameFontNormal or GameFontDisable)
+end
 
 local slotsCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
 slotsCheck:SetPoint("TOPLEFT", promoteCheck, "BOTTOMLEFT", 0, -15)
@@ -235,6 +243,7 @@ frame:SetScript("OnShow", function()
     end
     showRolesCheck:SetChecked(RaidComp.db.showRoleIcons ~= false)
     promoteCheck:SetChecked(RaidComp.db.showPromoteIcons ~= false)
+    UpdateRoleSettingDependencies()
     slotsCheck:SetChecked(RaidComp.db.showEmptySlots ~= false)
     UpdatePreview()
 end)
