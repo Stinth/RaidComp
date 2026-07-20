@@ -98,6 +98,22 @@ local promoteText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
 promoteText:SetText("Show promote icons (Leader/Assistant/Main Tank)")
 
+local slotsCheck = CreateFrame("CheckButton", nil, frame, "UICheckButtonTemplate")
+slotsCheck:SetPoint("TOPLEFT", promoteCheck, "BOTTOMLEFT", 0, -15)
+slotsCheck:SetScript("OnClick", function(self)
+    RaidComp.db.showEmptySlots = self:GetChecked()
+    if RaidComp.UpdateSlotDisplay then
+        RaidComp.UpdateSlotDisplay()
+    end
+    if UpdatePreview then
+        UpdatePreview()
+    end
+end)
+
+local slotsText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+slotsText:SetPoint("LEFT", slotsCheck, "RIGHT", 5, 0)
+slotsText:SetText("Show empty player slots")
+
 local preview = CreateFrame("Frame", nil, frame)
 preview:SetPoint("TOPLEFT", frame, "TOPLEFT", 310, -45)
 preview:SetSize(250, 260)
@@ -165,6 +181,19 @@ for index, data in ipairs(rolePreviewData) do
     rolePreviewRows[index] = row
 end
 
+local slotPreviewRow = CreateFrame("Frame", nil, preview)
+slotPreviewRow:SetSize(150, 20)
+slotPreviewRow:SetPoint("TOPLEFT", rolePreviewRows[#rolePreviewRows], "BOTTOMLEFT", 0, -5)
+
+local slotPreviewBackground = slotPreviewRow:CreateTexture(nil, "BACKGROUND")
+slotPreviewBackground:SetAllPoints()
+slotPreviewBackground:SetAtlas("friends-card-raid")
+slotPreviewBackground:SetAlpha(0.45)
+
+local slotPreviewText = slotPreviewRow:CreateFontString(nil, "ARTWORK", "GameFontDisableSmall")
+slotPreviewText:SetPoint("CENTER")
+slotPreviewText:SetText(EMPTY)
+
 UpdatePreview = function()
     local classCounts = RaidComp.GetRaidClassCounts()
     local visibleIndex = 0
@@ -193,6 +222,8 @@ UpdatePreview = function()
             row.roleAnchor:Hide()
         end
     end
+
+    slotPreviewRow:SetShown(RaidComp.db.showEmptySlots ~= false)
 end
 
 frame:SetScript("OnShow", function()
@@ -204,6 +235,7 @@ frame:SetScript("OnShow", function()
     end
     showRolesCheck:SetChecked(RaidComp.db.showRoleIcons ~= false)
     promoteCheck:SetChecked(RaidComp.db.showPromoteIcons ~= false)
+    slotsCheck:SetChecked(RaidComp.db.showEmptySlots ~= false)
     UpdatePreview()
 end)
 

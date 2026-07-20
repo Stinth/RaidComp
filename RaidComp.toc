@@ -4,11 +4,13 @@
 ## Author: Stinth
 ## IconTexture: Interface\Icons\inv_misc_grouplooking
 ## DefaultState: Enabled
-## Version: 2.0.1-alpha
+## Version: 2.1.0-alpha
 ## SavedVariables: RaidCompDB
 ## X-Curse-Project-ID: 1512320
 ## X-Wago-ID: mKODX1Gx
 
+modules/core.lua
 modules/raidbuff.lua
+modules/raidslots.lua
 modules/raidrole.lua
 modules/settings.lua

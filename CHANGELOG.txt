@@ -1,5 +1,7 @@
+v2.1.0-alpha
+- Added optional empty player slot indicators for raid groups
 v2.0.1-alpha
-- Added a live settings preview for raid class indicators and player role icons
+- Added a settings preview feature
 v2.0.0-alpha
 - Updated RaidComp for 12.1.0 new Social UI raid page
 v1.0.10
