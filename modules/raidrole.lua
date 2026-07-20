@@ -37,13 +37,8 @@ local function GetRoleDisplayInfo(unit)
     return roleAtlas, promotionAtlas, xOffset
 end
 
-local function GetRoleAnchor(playerFrame)
-    local anchor = roleFrames[playerFrame]
-    if anchor then
-        return anchor
-    end
-
-    anchor = CreateFrame("Frame", nil, playerFrame)
+local function CreateRoleAnchor(playerFrame)
+    local anchor = CreateFrame("Frame", nil, playerFrame)
     anchor:SetSize(36, 20)
     anchor:SetPoint("LEFT", playerFrame, "LEFT", 2, 0)
     anchor:SetFrameLevel(playerFrame:GetFrameLevel() + 10)
@@ -58,6 +53,16 @@ local function GetRoleAnchor(playerFrame)
 
     anchor.promotionTexture = promotionTexture
     anchor.roleTexture = roleTexture
+    return anchor
+end
+
+local function GetRoleAnchor(playerFrame)
+    local anchor = roleFrames[playerFrame]
+    if anchor then
+        return anchor
+    end
+
+    anchor = CreateRoleAnchor(playerFrame)
     roleFrames[playerFrame] = anchor
     return anchor
 end
@@ -84,6 +89,21 @@ local function SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtl
 
     anchor.roleTexture:SetAtlas(roleAtlas)
     anchor:Show()
+end
+
+function RaidComp.CreateRolePreviewAnchor(playerFrame)
+    return CreateRoleAnchor(playerFrame)
+end
+
+function RaidComp.SetRolePreviewAnchor(anchor, playerFrame, role, promotionAtlas)
+    local roleAtlas = GetRoleAtlas(role)
+    if not roleAtlas then
+        anchor:Hide()
+        return
+    end
+
+    local xOffset = promotionAtlas == "RaidFrame-Icon-MainTank" and 4 or 2
+    SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtlas, xOffset)
 end
 
 local function HideInactiveRoleAnchors(activeAnchors)

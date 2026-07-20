@@ -4,7 +4,7 @@
 ## Author: Stinth
 ## IconTexture: Interface\Icons\inv_misc_grouplooking
 ## DefaultState: Enabled
-## Version: 2.0.0-alpha
+## Version: 2.0.1-alpha
 ## SavedVariables: RaidCompDB
 ## X-Curse-Project-ID: 1512320
 ## X-Wago-ID: mKODX1Gx

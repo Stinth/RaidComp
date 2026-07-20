@@ -1,3 +1,5 @@
+v2.0.1-alpha
+- Added a live settings preview for raid class indicators and player role icons
 v2.0.0-alpha
 - Updated RaidComp for 12.1.0 new Social UI raid page
 v1.0.10

@@ -42,12 +42,16 @@ RaidComp.ClassInfo = {
 
 local classInfo = RaidComp.ClassInfo
 local iconFrames = {}
-local classCounts = {}
 local NUM_CLASSES = #classInfo
 local raidFrame
-local ICON_SIZE = 29
-local ICON_GAP = 1
-local ICON_COLUMNS = 2
+
+RaidComp.ClassGridLayout = {
+    iconSize = 29,
+    gap = 1,
+    columns = 2,
+    xInset = 4,
+    yInset = 5,
+}
 
 local function HideIconFrames()
     for _, iconFrame in ipairs(iconFrames) do
@@ -55,14 +59,15 @@ local function HideIconFrames()
     end
 end
 
-local function ScanGroup()
+function RaidComp.GetRaidClassCounts()
+    local classCounts = {}
     for i = 1, NUM_CLASSES do
         classCounts[i] = 0
     end
     
     local numGroup = GetNumGroupMembers()
-    if not numGroup or numGroup == 0 then
-        return
+    if not IsInRaid() or not numGroup or numGroup == 0 then
+        return classCounts
     end
     
     for i = 1, numGroup do
@@ -71,9 +76,11 @@ local function ScanGroup()
             classCounts[classId] = (classCounts[classId] or 0) + 1
         end
     end
+
+    return classCounts
 end
 
-local function FormatText(currentAmount, requiredAmount)
+function RaidComp.FormatClassCount(currentAmount, requiredAmount)
     local color
     if currentAmount == 0 then
         color = "|cFFFF3030"
@@ -83,6 +90,35 @@ local function FormatText(currentAmount, requiredAmount)
         color = "|cFF50C878"
     end
     return color .. math.min(currentAmount, requiredAmount) .. "/" .. requiredAmount .. "|r"
+end
+
+function RaidComp.CreateClassIndicator(parent, info, globalName)
+    local indicator = CreateFrame("Frame", globalName, parent)
+    local layout = RaidComp.ClassGridLayout
+    indicator:SetSize(layout.iconSize, layout.iconSize)
+
+    local texture = indicator:CreateTexture(nil, "ARTWORK")
+    texture:SetAllPoints()
+    texture:SetTexture(info.icon)
+
+    local text = indicator:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
+    text:SetPoint("BOTTOM", 0, 2)
+
+    indicator.iconTex = texture
+    indicator.text = text
+    return indicator
+end
+
+function RaidComp.PositionClassIndicator(indicator, anchor, relativePoint, visibleIndex)
+    local layout = RaidComp.ClassGridLayout
+    local gridIndex = visibleIndex - 1
+    local column = gridIndex % layout.columns
+    local row = math.floor(gridIndex / layout.columns)
+    local xOffset = layout.xInset + column * (layout.iconSize + layout.gap)
+    local yOffset = -layout.yInset - row * (layout.iconSize + layout.gap)
+
+    indicator:ClearAllPoints()
+    indicator:SetPoint("TOPLEFT", anchor, relativePoint, xOffset, yOffset)
 end
 
 local function CreateIconFrames()
@@ -97,21 +133,7 @@ local function CreateIconFrames()
 
     for i = 1, NUM_CLASSES do
         local info = classInfo[i]
-        
-        local f = CreateFrame("Frame", "RaidCompBuffIcon" .. i, raidFrame)
-        f:SetSize(ICON_SIZE, ICON_SIZE)
-        
-        local tex = f:CreateTexture(nil, "ARTWORK")
-        tex:SetAllPoints()
-        tex:SetTexture(info.icon)
-        
-        local text = f:CreateFontString(nil, "OVERLAY", "NumberFontNormalSmall")
-        text:SetPoint("BOTTOM", 0, 2)
-        
-        f.iconTex = tex
-        f.text = text
-        
-        iconFrames[i] = f
+        iconFrames[i] = RaidComp.CreateClassIndicator(raidFrame, info, "RaidCompBuffIcon" .. i)
     end
 
     return true
@@ -124,7 +146,7 @@ local function UpdateDisplay()
     end
 
     
-    ScanGroup()
+    local classCounts = RaidComp.GetRaidClassCounts()
     
     local visibleIndex = 0
     local raidTab = SocialUIFrame:GetTabByType(SocialUITabType.RaidList)
@@ -141,17 +163,8 @@ local function UpdateDisplay()
         local shouldShow = req > 0 and not (RaidComp.db.hidePresent and current >= req)
         if shouldShow then
             visibleIndex = visibleIndex + 1
-
-            f:ClearAllPoints()
-
-            local gridIndex = visibleIndex - 1
-            local column = gridIndex % ICON_COLUMNS
-            local row = math.floor(gridIndex / ICON_COLUMNS)
-            local xOffset = 4 + column * (ICON_SIZE + ICON_GAP)
-            local yOffset = -5 - row * (ICON_SIZE + ICON_GAP)
-            f:SetPoint("TOPLEFT", raidTab, "BOTTOMLEFT", xOffset, yOffset)
-
-            f.text:SetText(FormatText(current, req))
+            RaidComp.PositionClassIndicator(f, raidTab, "BOTTOMLEFT", visibleIndex)
+            f.text:SetText(RaidComp.FormatClassCount(current, req))
         end
 
         f:SetShown(shouldShow)

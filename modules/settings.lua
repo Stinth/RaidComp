@@ -1,5 +1,6 @@
 local classInfo = RaidComp.ClassInfo
 local NUM_CLASSES = #classInfo
+local UpdatePreview
 
 local frame = CreateFrame("Frame")
 frame.name = "RaidComp"
@@ -18,6 +19,9 @@ hideCheck:SetScript("OnClick", function(self)
     RaidComp.db.hidePresent = self:GetChecked()
     if RaidComp.UpdateDisplay then
         RaidComp.UpdateDisplay()
+    end
+    if UpdatePreview then
+        UpdatePreview()
     end
 end)
 
@@ -40,6 +44,9 @@ for i = 1, NUM_CLASSES do
         RaidComp.db.selectedBuffs[classID] = self:GetChecked()
         if RaidComp.UpdateDisplay then
             RaidComp.UpdateDisplay()
+        end
+        if UpdatePreview then
+            UpdatePreview()
         end
     end)
     
@@ -66,6 +73,9 @@ showRolesCheck:SetScript("OnClick", function(self)
     if RaidComp.UpdateRoleDisplay then
         RaidComp.UpdateRoleDisplay()
     end
+    if UpdatePreview then
+        UpdatePreview()
+    end
 end)
 
 local showRolesText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
@@ -79,11 +89,111 @@ promoteCheck:SetScript("OnClick", function(self)
     if RaidComp.UpdateRoleDisplay then
         RaidComp.UpdateRoleDisplay()
     end
+    if UpdatePreview then
+        UpdatePreview()
+    end
 end)
 
 local promoteText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
 promoteText:SetText("Show promote icons (Leader/Assistant/Main Tank)")
+
+local preview = CreateFrame("Frame", nil, frame)
+preview:SetPoint("TOPLEFT", frame, "TOPLEFT", 310, -45)
+preview:SetSize(250, 260)
+
+local previewBackground = preview:CreateTexture(nil, "BACKGROUND")
+previewBackground:SetAllPoints()
+previewBackground:SetColorTexture(0.025, 0.025, 0.025, 0.8)
+
+local function AddPreviewBorder(point1, point2, width, height)
+    local border = preview:CreateTexture(nil, "BORDER")
+    border:SetColorTexture(0.35, 0.35, 0.35, 0.8)
+    border:SetPoint(point1)
+    border:SetPoint(point2)
+    if width then
+        border:SetWidth(width)
+    end
+    if height then
+        border:SetHeight(height)
+    end
+end
+
+AddPreviewBorder("TOPLEFT", "TOPRIGHT", nil, 1)
+AddPreviewBorder("BOTTOMLEFT", "BOTTOMRIGHT", nil, 1)
+AddPreviewBorder("TOPLEFT", "BOTTOMLEFT", 1, nil)
+AddPreviewBorder("TOPRIGHT", "BOTTOMRIGHT", 1, nil)
+
+local previewTitle = preview:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+previewTitle:SetPoint("TOPLEFT", 10, -8)
+previewTitle:SetText("Preview")
+
+local previewGridAnchor = CreateFrame("Frame", nil, preview)
+previewGridAnchor:SetPoint("TOPLEFT", preview, "TOPLEFT", 8, -32)
+previewGridAnchor:SetSize(70, 220)
+
+local previewIcons = {}
+for classID = 1, NUM_CLASSES do
+    previewIcons[classID] = RaidComp.CreateClassIndicator(previewGridAnchor, classInfo[classID])
+end
+
+local rolePreviewTitle = preview:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+rolePreviewTitle:SetPoint("TOPLEFT", preview, "TOPLEFT", 88, -38)
+rolePreviewTitle:SetText("Player Rows")
+
+local rolePreviewData = {
+    { name = "Leader", role = "DAMAGER", promotionAtlas = "friends-icon-raidLead" },
+    { name = "Assistant", role = "HEALER", promotionAtlas = "friends-icon-raidAssist" },
+    { name = "Main Tank", role = "TANK", promotionAtlas = "RaidFrame-Icon-MainTank" },
+}
+
+local rolePreviewRows = {}
+for index, data in ipairs(rolePreviewData) do
+    local row = CreateFrame("Frame", nil, preview)
+    row:SetSize(150, 22)
+    row:SetPoint("TOPLEFT", rolePreviewTitle, "BOTTOMLEFT", 0, -6 - ((index - 1) * 25))
+
+    local background = row:CreateTexture(nil, "BACKGROUND")
+    background:SetAllPoints()
+    background:SetColorTexture(0.08, 0.08, 0.08, 0.9)
+
+    local name = row:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+    name:SetPoint("LEFT", row, "LEFT", 40, 0)
+    name:SetText(data.name)
+
+    row.roleAnchor = RaidComp.CreateRolePreviewAnchor(row)
+    rolePreviewRows[index] = row
+end
+
+UpdatePreview = function()
+    local classCounts = RaidComp.GetRaidClassCounts()
+    local visibleIndex = 0
+
+    for classID = 1, NUM_CLASSES do
+        local indicator = previewIcons[classID]
+        local current = classCounts[classID] or 0
+        local required = RaidComp.db.selectedBuffs[classID] and 1 or 0
+        local shouldShow = required > 0 and not (RaidComp.db.hidePresent and current >= required)
+
+        if shouldShow then
+            visibleIndex = visibleIndex + 1
+            RaidComp.PositionClassIndicator(indicator, previewGridAnchor, "TOPLEFT", visibleIndex)
+            indicator.text:SetText(RaidComp.FormatClassCount(current, required))
+        end
+
+        indicator:SetShown(shouldShow)
+    end
+
+    for index, data in ipairs(rolePreviewData) do
+        local row = rolePreviewRows[index]
+        if RaidComp.db.showRoleIcons ~= false then
+            local promotionAtlas = RaidComp.db.showPromoteIcons ~= false and data.promotionAtlas or nil
+            RaidComp.SetRolePreviewAnchor(row.roleAnchor, row, data.role, promotionAtlas)
+        else
+            row.roleAnchor:Hide()
+        end
+    end
+end
 
 frame:SetScript("OnShow", function()
     hideCheck:SetChecked(RaidComp.db.hidePresent)
@@ -94,6 +204,15 @@ frame:SetScript("OnShow", function()
     end
     showRolesCheck:SetChecked(RaidComp.db.showRoleIcons ~= false)
     promoteCheck:SetChecked(RaidComp.db.showPromoteIcons ~= false)
+    UpdatePreview()
+end)
+
+frame:RegisterEvent("GROUP_ROSTER_UPDATE")
+frame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
+frame:SetScript("OnEvent", function()
+    if frame:IsShown() then
+        UpdatePreview()
+    end
 end)
 
 local category = Settings.RegisterCanvasLayoutCategory(frame, "RaidComp")
