@@ -151,7 +151,7 @@ local function UpdateLegacyRoleDisplay(activeAnchors)
     end
 end
 
-local function UpdateRoleDisplay()
+local function UpdateRoleDisplay(raidFrame)
     local db = RaidComp and RaidComp.db or {}
     if db.showRoleIcons == false or not IsInRaid() then
         HideInactiveRoleAnchors()
@@ -159,63 +159,11 @@ local function UpdateRoleDisplay()
     end
 
     local activeAnchors = {}
-    local raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
     if not UpdateSocialRoleDisplay(raidFrame, activeAnchors) then
         UpdateLegacyRoleDisplay(activeAnchors)
     end
     HideInactiveRoleAnchors(activeAnchors)
 end
 
-local updateQueued = false
-local function QueueRoleDisplayUpdate()
-    if updateQueued then
-        return
-    end
-
-    updateQueued = true
-    C_Timer.After(0, function()
-        updateQueued = false
-        UpdateRoleDisplay()
-    end)
-end
-
-local eventFrame = CreateFrame("Frame")
-eventFrame:RegisterEvent("ADDON_LOADED")
-eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-eventFrame:RegisterEvent("PLAYER_ROLES_ASSIGNED")
-eventFrame:RegisterEvent("ROLE_CHANGED_INFORM")
-
-local raidFrameHooked = false
-local contentsUpdateHooked = false
-local function InitializeForSocialUI()
-    local raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
-    if raidFrame and not raidFrameHooked then
-        raidFrameHooked = true
-        raidFrame:HookScript("OnShow", QueueRoleDisplayUpdate)
-        QueueRoleDisplayUpdate()
-    end
-
-    if raidFrame and not contentsUpdateHooked then
-        contentsUpdateHooked = true
-        hooksecurefunc(raidFrame, "UpdateContents", QueueRoleDisplayUpdate)
-    end
-end
-
-eventFrame:SetScript("OnEvent", function(self, event, addonLoaded)
-    if event == "ADDON_LOADED" then
-        if addonLoaded == "Blizzard_SocialUI" then
-            InitializeForSocialUI()
-            self:UnregisterEvent("ADDON_LOADED")
-        end
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        InitializeForSocialUI()
-        QueueRoleDisplayUpdate()
-    else
-        QueueRoleDisplayUpdate()
-    end
-end)
-
-InitializeForSocialUI()
-
-RaidComp.UpdateRoleDisplay = QueueRoleDisplayUpdate
+RaidComp.RegisterRaidFrameUpdater(UpdateRoleDisplay)
+RaidComp.UpdateRoleDisplay = RaidComp.RequestRaidFrameUpdate

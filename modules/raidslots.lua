@@ -46,8 +46,7 @@ local function HideSlots(slots)
     end
 end
 
-local function UpdateSlots()
-    local raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
+local function UpdateSlots(raidFrame)
     local db = RaidComp and RaidComp.db or {}
     if db.showEmptySlots == false or not IsInRaid() or not raidFrame or type(raidFrame.groups) ~= "table" then
         for _, slots in pairs(slotGroups) do
@@ -73,50 +72,5 @@ local function UpdateSlots()
     end
 end
 
-local updateQueued = false
-local function QueueUpdate()
-    if updateQueued then
-        return
-    end
-
-    updateQueued = true
-    C_Timer.After(0, function()
-        updateQueued = false
-        UpdateSlots()
-    end)
-end
-
-local raidFrameHooked = false
-local function InitializeForSocialUI()
-    local raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
-    if not raidFrame or raidFrameHooked then
-        return
-    end
-
-    raidFrameHooked = true
-    raidFrame:HookScript("OnShow", QueueUpdate)
-    hooksecurefunc(raidFrame, "UpdateContents", QueueUpdate)
-    QueueUpdate()
-end
-
-local eventFrame = CreateFrame("Frame")
-eventFrame:RegisterEvent("ADDON_LOADED")
-eventFrame:RegisterEvent("PLAYER_ENTERING_WORLD")
-eventFrame:RegisterEvent("GROUP_ROSTER_UPDATE")
-eventFrame:SetScript("OnEvent", function(self, event, addonLoaded)
-    if event == "ADDON_LOADED" then
-        if addonLoaded == "Blizzard_SocialUI" then
-            InitializeForSocialUI()
-            self:UnregisterEvent("ADDON_LOADED")
-        end
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        InitializeForSocialUI()
-        QueueUpdate()
-    else
-        QueueUpdate()
-    end
-end)
-
-InitializeForSocialUI()
-
-RaidComp.UpdateSlotDisplay = QueueUpdate
+RaidComp.RegisterRaidFrameUpdater(UpdateSlots)
+RaidComp.UpdateSlotDisplay = RaidComp.RequestRaidFrameUpdate

@@ -17,7 +17,6 @@ RaidComp.ClassInfo = {
 local classInfo = RaidComp.ClassInfo
 local iconFrames = {}
 local NUM_CLASSES = #classInfo
-local raidFrame
 
 RaidComp.ClassGridLayout = {
     iconSize = 29,
@@ -95,8 +94,7 @@ function RaidComp.PositionClassIndicator(indicator, anchor, relativePoint, visib
     indicator:SetPoint("TOPLEFT", anchor, relativePoint, xOffset, yOffset)
 end
 
-local function CreateIconFrames()
-    raidFrame = SocialUIFrame and SocialUIFrame.RaidFrame
+local function CreateIconFrames(raidFrame)
     if not raidFrame then
         return false
     end
@@ -113,8 +111,8 @@ local function CreateIconFrames()
     return true
 end
 
-local function UpdateDisplay()
-    if #iconFrames == 0 or not IsInRaid() then
+local function UpdateDisplay(raidFrame)
+    if not CreateIconFrames(raidFrame) or not IsInRaid() then
         HideIconFrames()
         return
     end
@@ -145,32 +143,5 @@ local function UpdateDisplay()
     end
 end
 
-RaidComp.UpdateDisplay = UpdateDisplay
-
-local frame = CreateFrame("Frame")
-frame:RegisterEvent("ADDON_LOADED")
-frame:RegisterEvent("PLAYER_ENTERING_WORLD")
-frame:RegisterEvent("GROUP_ROSTER_UPDATE")
-
-local function InitializeForSocialUI()
-    if CreateIconFrames() and not frame.raidFrameHooked then
-        frame.raidFrameHooked = true
-        raidFrame:HookScript("OnShow", UpdateDisplay)
-        UpdateDisplay()
-    end
-end
-
-frame:SetScript("OnEvent", function(self, event, addonLoaded)
-    if event == "ADDON_LOADED" then
-        if addonLoaded == "Blizzard_SocialUI" then
-            InitializeForSocialUI()
-            self:UnregisterEvent("ADDON_LOADED")
-        end
-    elseif event == "PLAYER_ENTERING_WORLD" then
-        InitializeForSocialUI()
-    elseif event == "GROUP_ROSTER_UPDATE" then
-        UpdateDisplay()
-    end
-end)
-
-InitializeForSocialUI()
+RaidComp.RegisterRaidFrameUpdater(UpdateDisplay)
+RaidComp.UpdateDisplay = RaidComp.RequestRaidFrameUpdate
