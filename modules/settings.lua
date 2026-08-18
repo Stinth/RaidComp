@@ -98,7 +98,7 @@ end)
 
 local promoteText = frame:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 promoteText:SetPoint("LEFT", promoteCheck, "RIGHT", 5, 0)
-promoteText:SetText("Show promote icons (Leader/Assistant/Main Tank)")
+promoteText:SetText("Show promote icons (Leader/Assistant/Main Tank/Main Assist)")
 
 UpdateRoleSettingDependencies = function()
     local roleIconsEnabled = showRolesCheck:GetChecked()
@@ -169,6 +169,7 @@ local rolePreviewData = {
     { name = "Leader", role = "DAMAGER", promotionAtlas = "friends-icon-raidLead" },
     { name = "Assistant", role = "HEALER", promotionAtlas = "friends-icon-raidAssist" },
     { name = "Main Tank", role = "TANK", promotionAtlas = "RaidFrame-Icon-MainTank" },
+    { name = "Main Assist", role = "DAMAGER", promotionAtlas = "RaidFrame-Icon-MainAssist" },
 }
 
 local rolePreviewRows = {}

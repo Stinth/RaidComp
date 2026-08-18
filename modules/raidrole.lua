@@ -11,14 +11,20 @@ end
 
 local function GetPromotionAtlas(unit)
     if UnitIsGroupLeader(unit) then
-        return "friends-icon-raidLead", 2
+        return "friends-icon-raidLead", 0
     elseif UnitIsGroupAssistant(unit) then
-        return "friends-icon-raidAssist", 2
+        return "friends-icon-raidAssist", 0
     elseif GetPartyAssignment("MAINTANK", unit) then
-        return "RaidFrame-Icon-MainTank", 4
+        return "RaidFrame-Icon-MainTank", 2
+    elseif GetPartyAssignment("MAINASSIST", unit) then
+        return "RaidFrame-Icon-MainAssist", 2
     end
 
-    return nil, 2
+    return nil, 0
+end
+
+local function IsMainAssignmentAtlas(promotionAtlas)
+    return promotionAtlas == "RaidFrame-Icon-MainTank" or promotionAtlas == "RaidFrame-Icon-MainAssist"
 end
 
 local function GetRoleDisplayInfo(unit)
@@ -29,7 +35,7 @@ local function GetRoleDisplayInfo(unit)
 
     local db = RaidComp and RaidComp.db or {}
     local promotionAtlas
-    local xOffset = 2
+    local xOffset = 0
     if db.showPromoteIcons then
         promotionAtlas, xOffset = GetPromotionAtlas(unit)
     end
@@ -40,7 +46,7 @@ end
 local function CreateRoleAnchor(playerFrame)
     local anchor = CreateFrame("Frame", nil, playerFrame)
     anchor:SetSize(36, 20)
-    anchor:SetPoint("LEFT", playerFrame, "LEFT", 2, 0)
+    anchor:SetPoint("LEFT", playerFrame, "LEFT", 0, 0)
     anchor:SetFrameLevel(playerFrame:GetFrameLevel() + 10)
     anchor:Hide()
 
@@ -49,7 +55,7 @@ local function CreateRoleAnchor(playerFrame)
     promotionTexture:Hide()
 
     local roleTexture = anchor:CreateTexture(nil, "OVERLAY")
-    roleTexture:SetSize(17, 17)
+    roleTexture:SetSize(15, 15)
 
     anchor.promotionTexture = promotionTexture
     anchor.roleTexture = roleTexture
@@ -74,13 +80,13 @@ local function SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtl
     anchor.roleTexture:ClearAllPoints()
     if promotionAtlas then
         anchor.promotionTexture:SetAtlas(promotionAtlas)
-        if promotionAtlas == "RaidFrame-Icon-MainTank" then
+        if IsMainAssignmentAtlas(promotionAtlas) then
             anchor.promotionTexture:SetSize(14, 14)
         else
             anchor.promotionTexture:SetSize(17, 15)
         end
         anchor.promotionTexture:Show()
-        local roleIconSpacing = promotionAtlas == "RaidFrame-Icon-MainTank" and 0 or -1
+        local roleIconSpacing = IsMainAssignmentAtlas(promotionAtlas) and 0 or -1
         anchor.roleTexture:SetPoint("LEFT", anchor.promotionTexture, "RIGHT", roleIconSpacing, 0)
     else
         anchor.promotionTexture:Hide()
@@ -102,7 +108,7 @@ function RaidComp.SetRolePreviewAnchor(anchor, playerFrame, role, promotionAtlas
         return
     end
 
-    local xOffset = promotionAtlas == "RaidFrame-Icon-MainTank" and 4 or 2
+    local xOffset = IsMainAssignmentAtlas(promotionAtlas) and 2 or 0
     SetRoleAnchorDisplay(anchor, playerFrame, roleAtlas, promotionAtlas, xOffset)
 end
 
