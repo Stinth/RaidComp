@@ -1,3 +1,6 @@
+v2.1.1
+- Show main assist icon
+- Offset icons slightly left
 v2.1.0-alpha
 - Added optional empty player slot indicators for raid groups
 v2.0.1-alpha
